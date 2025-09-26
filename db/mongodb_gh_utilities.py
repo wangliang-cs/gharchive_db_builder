@@ -78,7 +78,7 @@ class GHArchiveMongoDBUtil:
         date_str = gh_record["created_at"]
         year = date_str.split('-')[0]
         month = date_str.split('-')[1]
-        if year <= 2021:
+        if int(year) <= 2021:
             col_id = f"{year}_{month}_neo"
         else:
             col_id = f"{year}_{month}"
