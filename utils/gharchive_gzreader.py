@@ -134,6 +134,8 @@ def gz_reader(arg_dict):
                 if file_path not in complated_list:
                     if unzip2queue(file_path, message_out_qu):
                         continue
+                    else:
+                        os.remove(file_path)
                 else:
                     print(f"\rSkipped (already exists): {file_url}", end="")
                     continue
@@ -149,6 +151,8 @@ def gz_reader(arg_dict):
                             raise ValueError("Downloaded file is invalid")
                         if unzip2queue(file_path, message_out_qu):
                             break
+                        else:
+                            os.remove(file_path)
                 except Exception as download_error:
                     if attempt == 2:  # 最后一次尝试也失败
                         raise Exception(f"Failed after 3 attempts: {file_url} - Error: {str(download_error)[:100]}")
