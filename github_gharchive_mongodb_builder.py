@@ -1,5 +1,6 @@
 import multiprocessing
 import gzip
+import os.path
 import time
 
 from utils import gharchive_receiver, gharchive_gzreader
@@ -47,14 +48,16 @@ def generate_file_urls(start_year, end_year):
 
 
 def load_completed(complete_log_path):
-    complated_list = set()
+    completed_list = set()
     try:
+        if not os.path.exists(complete_log_path):
+            return completed_list
         with open(complete_log_path, "r", encoding="utf-8") as fd:
             for line in fd:
-                complated_list.add(line.strip())
+                completed_list.add(line.strip())
     except Exception as e:
         print(e)
-    return complated_list
+    return completed_list
 
 
 def exec(start_year, end_year, num_process=10):
