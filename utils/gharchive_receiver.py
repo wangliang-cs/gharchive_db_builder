@@ -67,10 +67,10 @@ class GHReceiver:
                     continue_flag = False
                 else:
                     print(f"Error: unrecognized message type: {type}")
-            except:
+            except Exception as e:
                 time.sleep(10)
                 self.__flush("Receiver flush when waiting.")
-                print(f"[{datetime.datetime.now()}] GHReceiver waiting.")
+                print(f"[{datetime.datetime.now()}] GHReceiver waiting. {e}")
         self.__flush("Receiver final flush.")
 
     def start(self):
