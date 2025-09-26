@@ -84,10 +84,11 @@ def smart_download(url, dest_path):
     try:
         if os.path.exists(dest_path):
             if not check_ok(dest_path):
-                print(f"[{datetime.datetime.now()}] 发现未完成的下载，将继续下载... {dest_path}")
+                print(f"[{datetime.datetime.now()}] 发现破损文件... {dest_path}")
                 os.remove(dest_path)  # 删除无效文件
             else:
                 return dest_path
+        print(f"[{datetime.datetime.now()}] 发现缺失文件... {dest_path}")
         obj = SmartDL(url, dest_path, threads=8, timeout=120)
         obj.start()
 
