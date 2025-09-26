@@ -1,32 +1,10 @@
 import multiprocessing
-import os
 import gzip
 import time
 
-import config
 from utils import gharchive_receiver, gharchive_gzreader
 import datetime
-from pySmartDL import SmartDL
 import config
-
-
-def smart_download(url, dest_path):
-    try:
-        obj = SmartDL(url, dest_path, verify=True, threads=8, timeout=120)
-        if os.path.exists(dest_path):
-            print(f"[{datetime.datetime.now()}] 发现未完成的下载，将继续下载... {dest_path}")
-        obj.add_hash_verification('sha1', 'expected_sha1_hash')
-        obj.start()
-
-        if obj.isSuccessful():
-            print(f"[{datetime.datetime.now()}] 下载完成: {obj.get_dest()}")
-            return obj.get_dest()
-        else:
-            print(f"[{datetime.datetime.now()}] 下载失败: {url}\n{obj.get_errors()}")
-            return None
-    except Exception as e:
-        print(f"[{datetime.datetime.now()}] 下载失败: {url}\n{e}")
-        return None
 
 
 def check_ok(file_path):
@@ -112,6 +90,7 @@ def exec(start_year, end_year, num_process=10):
     total_exec_time = (time.time() - exec_start_time) / 3600
     print(
         f"Terminated at {datetime.datetime.now()}, total time cost {total_exec_time:.2f} hours.")
+
 
 if __name__ == "__main__":
     while True:
