@@ -7,6 +7,8 @@ from utils import gharchive_receiver, gharchive_gzreader
 import datetime
 import config
 
+do_inverse = False
+
 
 def check_ok(file_path):
     try:
@@ -42,8 +44,10 @@ def generate_file_urls(start_year, end_year):
                         return file_urls
                     elif bct_res == 2:
                         file_url = f"http://data.gharchive.org/{year}-{month:02d}-{day:02d}-{hour}.json.gz"
-                        file_urls.insert(0, file_url)
-                        # file_urls.append(file_url)
+                        if do_inverse:
+                            file_urls.insert(0, file_url)
+                        else:
+                            file_urls.append(file_url)
     return file_urls
 
 
