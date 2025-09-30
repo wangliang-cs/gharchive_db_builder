@@ -72,7 +72,8 @@ def unzip2queue(gz_file_path, msg_out_qu):
                     time.sleep(1)
                 msg_out_qu.put({"type": "record", "content": {"record": record_to_send, "gz_file_path": gz_file_path}})
             except Exception as e:
-                print(str(e)[:50])
+                print(e)
+                print(record)
         msg_out_qu.put({"type": "complete", "content": gz_file_path})
         return True
     except Exception as e:
