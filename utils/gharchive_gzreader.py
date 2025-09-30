@@ -25,6 +25,9 @@ def unzip2queue(gz_file_path, msg_out_qu):
         for line in lines:
             try:
                 record = json.loads(line.strip())
+                if record["type"] == "GistEvent":
+                    # omit GistEvents
+                    continue
                 record_to_send = {"id": record["id"]}
                 if "repo" in record:
                     repo_name = record["repo"]["name"]
