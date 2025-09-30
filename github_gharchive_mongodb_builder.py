@@ -98,5 +98,5 @@ def exec(start_year, end_year, num_process=10):
 if __name__ == "__main__":
     while True:
         year = datetime.datetime.now().year
-        exec(2008, int(year), 10)
+        exec(2011, int(year), 20)
         time.sleep(30 * 60)  # 30min
