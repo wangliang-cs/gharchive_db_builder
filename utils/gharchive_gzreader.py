@@ -17,6 +17,35 @@ def log_unable_to_parse(line):
         fd.write('\n')
 
 
+import hashlib
+
+
+def generate_sha_hash(input_str, sha_version="sha256"):
+    """
+    生成字符串的SHA哈希值
+
+    参数：
+        input_str: 输入的字符串
+        sha_version: SHA版本，支持'sha1'、'sha256'、'sha512'（默认sha256）
+
+    返回：
+        十六进制格式的SHA哈希值字符串
+    """
+    # 检查支持的SHA版本
+    supported_versions = ["sha1", "sha256", "sha512"]
+    if sha_version not in supported_versions:
+        raise ValueError(f"不支持的SHA版本，可选：{supported_versions}")
+
+    # 字符串转字节流（必须指定编码，如utf-8）
+    byte_data = input_str.encode("utf-8")
+
+    # 创建哈希对象并计算哈希值
+    hash_obj = hashlib.new(sha_version, byte_data)
+
+    # 返回十六进制结果
+    return hash_obj.hexdigest()
+
+
 def unzip2queue(gz_file_path, msg_out_qu):
     try:
         print(f"[{datetime.datetime.now()}] 开始处理: {gz_file_path}")
@@ -28,7 +57,10 @@ def unzip2queue(gz_file_path, msg_out_qu):
                 if record["type"] == "GistEvent":
                     # omit GistEvents
                     continue
-                record_to_send = {"id": record["id"]}
+                record_to_send = {}
+                if "id" in record:
+                    record_to_send["id"] = record["id"]
+
                 if "repo" in record:
                     repo_name = record["repo"]["name"]
                 elif "repository" in record:
@@ -50,6 +82,9 @@ def unzip2queue(gz_file_path, msg_out_qu):
                 record_to_send["user_id"] = f"github:{actor_login}"
                 record_to_send["type"] = record["type"]
                 record_to_send["created_at"] = record["created_at"]
+                if "id" not in record:
+                    id_str = f'{record_to_send["proj_id"]}_{record_to_send["user_id"]}_{record_to_send["type"]}_{record_to_send["created_at"]}'
+                    record_to_send["id"] = generate_sha_hash(id_str)
                 if "payload" in record:
                     if "action" in record["payload"]:
                         record_to_send["action"] = record["payload"]["action"]
