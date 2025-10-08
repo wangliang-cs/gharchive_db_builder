@@ -25,6 +25,7 @@ class GHArchiveMongoDBCountUtil:
             self.mongo_target_db[collection_name].create_index([("proj_id", ASCENDING), ("user_id", ASCENDING)])
 
     def count_events(self, source_collection_name, target_collection_name):
+        print(f"[{datetime.datetime.now()}] 开始处理集合 '{source_collection_name}' 到 '{target_collection_name}'")
         if source_collection_name not in self.mongo_source_db.list_collection_names():
             print(f"[{datetime.datetime.now()}] 集合 '{source_collection_name}' 不存在")
             return
