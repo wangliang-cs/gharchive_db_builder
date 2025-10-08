@@ -7,4 +7,4 @@ for year in range(2011, 2021):
     for month in range(1, 13):
         if year == 2020 and month >= 11:
             break
-        count_db_util.count_events(f"events_id_{year}-{month:02d}", f"events_count_{year}-{month:02d}")
+        count_db_util.count_events(f"events_id_{year}_{month:02d}_neo", f"events_count_{year}_{month:02d}")

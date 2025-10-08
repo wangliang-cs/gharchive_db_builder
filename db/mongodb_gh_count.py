@@ -3,7 +3,7 @@ import datetime
 from pymongo import MongoClient, ASCENDING
 from pymongo.errors import BulkWriteError
 import time
-import config
+
 
 class GHArchiveMongoDBCountUtil:
     def __init__(self, mongodb_conn_str):
