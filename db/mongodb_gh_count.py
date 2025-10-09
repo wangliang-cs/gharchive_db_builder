@@ -1,8 +1,7 @@
-import datetime
-
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient, ASCENDING, UpdateOne
 from pymongo.errors import BulkWriteError
 import time
+import datetime
 
 
 class GHArchiveMongoDBCountUtil:
@@ -49,28 +48,59 @@ class GHArchiveMongoDBCountUtil:
         
         # 记录管道执行开始时间
         pipeline_start_time = time.time()
-        result = source_collection.aggregate(pipeline)
+        
+        # 使用allowDiskUse=True和batchSize参数来优化aggregate操作
+        # 同时将结果转换为列表，避免长时间保持cursor打开
+        result = list(source_collection.aggregate(pipeline, allowDiskUse=True, batchSize=10000))
+        
         # 记录管道执行结束时间
         pipeline_end_time = time.time()
         pipeline_time_minutes = (pipeline_end_time - pipeline_start_time) / 60
+        print(f"[{datetime.datetime.now()}] 集合 '{source_collection_name}' 管道执行时间: {pipeline_time_minutes:.2f} 分钟")
+        print(f"[{datetime.datetime.now()}] 聚合结果总数: {len(result)} 条记录")
         
         # 记录插入操作开始时间
         insert_start_time = time.time()
-        for item in result:
-            target_collection.update_one(
-                {
-                    "proj_id": item["proj_id"],
-                    "user_id": item["user_id"],
-                    "type": item["type"]
-                },
-                {"$set": {"count": item["count"]}},
-                upsert=True
-            )
+        
+        # 使用批量写入方式，每次处理50000条记录
+        bulk_operations = []
+        batch_size = 50000
+        count = 0
+        
+        try:
+            for item in result:
+                # 创建更新操作
+                update_operation = UpdateOne(
+                    {
+                        "proj_id": item["proj_id"],
+                        "user_id": item["user_id"],
+                        "type": item["type"]
+                    },
+                    {"$set": {"count": item["count"]}},
+                    upsert=True
+                )
+                bulk_operations.append(update_operation)
+                count += 1
+                
+                # 当批量操作达到指定大小时，执行批量写入
+                if len(bulk_operations) >= batch_size:
+                    target_collection.bulk_write(bulk_operations)
+                    print(f"[{datetime.datetime.now()}] 已处理 {count} 条记录")
+                    bulk_operations = []
+            
+            # 处理剩余的记录
+            if bulk_operations:
+                target_collection.bulk_write(bulk_operations)
+                print(f"[{datetime.datetime.now()}] 已处理 {count} 条记录")
+        except BulkWriteError as bwe:
+            print(f"[{datetime.datetime.now()}] 批量写入错误: {bwe.details}")
+        except Exception as e:
+            print(f"[{datetime.datetime.now()}] 处理过程中发生错误: {str(e)}")
+        
         # 记录插入操作结束时间
         insert_end_time = time.time()
         insert_time_minutes = (insert_end_time - insert_start_time) / 60
         
         # 打印执行时间，精确到分钟
-        print(f"[{datetime.datetime.now()}] 集合 '{source_collection_name}' 管道执行时间: {pipeline_time_minutes:.2f} 分钟")
         print(f"[{datetime.datetime.now()}] 集合 '{target_collection_name}' 插入操作执行时间: {insert_time_minutes:.2f} 分钟")
         
