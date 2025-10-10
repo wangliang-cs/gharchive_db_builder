@@ -9,6 +9,7 @@ import numpy as np
 from pySmartDL import SmartDL
 
 import config
+from dateutil import parser
 
 
 def log_unable_to_parse(line):
@@ -81,19 +82,27 @@ def unzip2queue(gz_file_path, msg_out_qu):
                 record_to_send["proj_id"] = f"github:{repo_name}"
                 record_to_send["user_id"] = f"github:{actor_login}"
                 record_to_send["type"] = record["type"]
-                record_to_send["created_at"] = record["created_at"]
+                # 统一时间格式
+                created_at=record["created_at"]
+                created_at=parser.parse(created_at)
+                record_to_send["created_at"] = created_at.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                # record_to_send["created_at"] = record["created_at"]
                 if "id" not in record:
                     id_str = f'{record_to_send["proj_id"]}_{record_to_send["user_id"]}_{record_to_send["type"]}_{record_to_send["created_at"]}'
                     record_to_send["id"] = generate_sha_hash(id_str)
                 if "payload" in record:
                     if "action" in record["payload"]:
                         record_to_send["action"] = record["payload"]["action"]
+
                     if "issue" in record["payload"]:
                         if isinstance(record["payload"]["issue"], dict):
                             if "number" in record["payload"]["issue"]:
                                 record_to_send["number"] = record["payload"]["issue"]["number"]
                         else:
                             record_to_send["number"] = record["payload"]["number"]
+                    elif "issue_id" in record["payload"]:
+                        record_to_send["number"] = record["payload"]["issue_id"]
+
                     if "pull_request" in record["payload"]:
                         if isinstance(record["payload"]["pull_request"], dict):
                             if "number" in record["payload"]["pull_request"]:
